@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Пульт для Minecraft</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 20px 40px; font-size: 24px; cursor: pointer; }
+        #status { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Управление Minecraft</h1>
+    <button id="actionBtn">💥 Выполнить действие</button>
+    <p id="status">Статус: готов</p>
+
+    <script>
+        // ЗАМЕНИТЕ ЭТИ ЗНАЧЕНИЯ НА СВОИ
+        const BIN_ID = '6a348e39da38895dfeda94e2';
+        const API_KEY = '$2a$10$gLeGFqsoAQyEJE5eHp6lZu7Rv7hmK4tREvK6QBc62zIFuW1tCDjQy';
+        const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        const statusEl = document.getElementById('status');
+
+        document.getElementById('actionBtn').addEventListener('click', function() {
+            // Отправляем команду "do_something"
+            fetch(BIN_URL, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify({ action: "do_something" })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка сети');
+                return response.json();
+            })
+            .then(data => {
+                statusEl.textContent = '✅ Команда отправлена!';
+                // Через 2 секунды сбрасываем состояние (чтобы кнопка не "залипала")
+                setTimeout(() => {
+                    fetch(BIN_URL, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': API_KEY
+                        },
+                        body: JSON.stringify({ action: "none" })
+                    })
+                    .then(() => {
+                        statusEl.textContent = '🔄 Готов к новой команде';
+                    })
+                    .catch(() => {});
+                }, 2000);
+            })
+            .catch(err => {
+                statusEl.textContent = '❌ Ошибка: ' + err.message;
+            });
+        });
+    </script>
+</body>
+</html>
